@@ -5,76 +5,34 @@
 #include <vector>
 #include <numeric>
 using namespace std;
-
 namespace luhn {
     bool valid(string ID){
-        //remove whitespace
+        // Preprocessing for valid inputs
+        // Remove spaces
         ID.erase(remove(ID.begin(), ID.end(), ' '), ID.end());
-
-        for(long unsigned int i = 0; i < ID.size(); ++i){
-            if(!(ID[i] >= 48 && ID[i] <= 57)){return false;}
-        }
-
+        // Check if size >= 2
         if(ID.size() <= 1){
             return false;
         }
-
-        //separate the second digit into "doubles"
-        string doubles;
-        if(ID.size() % 2 == 0){
-            for(long unsigned int i = 0; i < ID.size(); i = i + 2){
-                doubles += ID[i];
-            }
-        }else if(ID.size() % 2 != 0){
-            for(long unsigned int i = 1; i < ID.size(); i = i + 2){
-                doubles += ID[i];
-            }
-        }
-        //put all "doubles" into a vector of ints to begin doubling
-        vector<int> doubleVector;
-        for(long unsigned int i = 0; i < doubles.size(); ++i){
-            int x = doubles[i] - '0';
-            doubleVector.push_back(x);
-        }
-
-        //double
-        for(long unsigned int i = 0; i < doubleVector.size(); ++i){
-            doubleVector[i] = doubleVector[i] * 2;
-            if(doubleVector[i] > 9){
-                doubleVector[i] = doubleVector[i] - 9;
-            }
-        }
-
-        //convert original ID to a vector of ints
-        vector<int> IDvector; 
-        for(long unsigned int i = 0; i < ID.size(); ++i){
-            int y = ID[i] - '0';
-            IDvector.push_back(y);
-        }
-
-        //now we have a vector of all digits of the ID and a vector of doubles
-        //insert all doubles into the alternate positions of ID vector
-        long unsigned int j = 0;
-        while(j < doubleVector.size() - 1){
-            if(ID.size() % 2 == 0){
-                for(long unsigned int i = 0; i < IDvector.size(); i = i + 2){
-                    IDvector[i] = doubleVector[j];
-                    ++j;
-                }
-            }else if(ID.size() % 2 != 0){
-                for(long unsigned int i = 1; i < IDvector.size(); i = i + 2){
-                    IDvector[i] = doubleVector[j];
-                    ++j;
-                }
-            }
-        }
-        //if(IDvector.size() <= 3){
-          //  return true;
-        //}
-
-        int sum = accumulate(IDvector.begin(), IDvector.end(), 0);
-        return (sum % 10 == 0);
-
         
+        unsigned int index_to_double = (((ID.size() % 2) == 0) ? 0 : 1);
+        int sum = 0;
+        for (unsigned int i = 0; i < ID.size(); i++) {
+            // Check for invalid characters
+            if (!(ID[i] >= 48 && ID[i] <= 57)) {
+                return false;
+            }
+            // Luhn algorithm
+            int value_of_char_at_i = (ID[i]-'0');
+            if (i == index_to_double) {
+                index_to_double = index_to_double + 2;
+                 value_of_char_at_i = value_of_char_at_i * 2;
+                int computed_value = (value_of_char_at_i > 9) ? value_of_char_at_i - 9 : value_of_char_at_i;
+                sum = sum + computed_value;
+            } else {
+                sum = sum + value_of_char_at_i;
+            }
+        }
+        return (sum % 10 == 0);
     }
 }  // namespace luhn
